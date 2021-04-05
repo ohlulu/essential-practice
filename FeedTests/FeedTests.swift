@@ -16,12 +16,12 @@ class RemoteFeedLoader {
     }
     
     func load(url: URL) {
-        client.requestURL = url
+        client.send(url: url)
     }
 }
 
 protocol HTTPClient {
-    var requestURL: URL? { get set }
+    func send(url: URL)
 }
 
 class FeedTests: XCTestCase {
@@ -42,7 +42,7 @@ class FeedTests: XCTestCase {
     
     // MARK: - Helper
     
-    private func makeSUT() -> (sut: RemoteFeedLoader, client: HTTPClient) {
+    private func makeSUT() -> (sut: RemoteFeedLoader, client: MockHTTPClient) {
         let client = MockHTTPClient()
         let sut = RemoteFeedLoader(client: client)
         return (sut, client)
@@ -50,5 +50,9 @@ class FeedTests: XCTestCase {
     
     private class MockHTTPClient: HTTPClient {
         var requestURL: URL?
+        
+        func send(url: URL) {
+            requestURL = url
+        }
     }
 }
