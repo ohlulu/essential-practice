@@ -78,6 +78,7 @@ class FeedTests: XCTestCase {
             requestURLs.append(url)
         }
         
+        // a mock behavior
         func complete(with error: Error, index: Int = 0) {
             completions[index](error)
         }
