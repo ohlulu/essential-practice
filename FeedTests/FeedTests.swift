@@ -39,11 +39,11 @@ class FeedTests: XCTestCase {
         let url = URL(string: "https://a-given-url.com")!
         let (sut, client) = makeSUT(url: url)
         
-        var capturedError: RemoteFeedLoader.Error?
-        sut.load { capturedError = $0 }
+        var capturedErrors = [RemoteFeedLoader.Error]()
+        sut.load { capturedErrors.append($0) }
         client.complete(with: NSError())
 
-        XCTAssertEqual(capturedError, .connectivity)
+        XCTAssertEqual(capturedErrors, [.connectivity])
     }
     
     func test_loadTwice_deliverErrorOnClientErrorTwice() {
@@ -51,7 +51,6 @@ class FeedTests: XCTestCase {
         let (sut, client) = makeSUT(url: url)
         
         var capturedErrors = [RemoteFeedLoader.Error]()
-        
         
         sut.load { capturedErrors.append($0) }
         client.complete(with: NSError())
@@ -72,7 +71,6 @@ class FeedTests: XCTestCase {
     
     private class MockHTTPClient: HTTPClient {
         var requestURLs: [URL] = []
-        var error: Error?
         var completions = [(Error) -> Void]()
         
         func send(url: URL, completion: @escaping (Error) -> Void) {
