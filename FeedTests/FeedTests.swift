@@ -70,17 +70,17 @@ class FeedTests: XCTestCase {
     }
     
     private class MockHTTPClient: HTTPClient {
-        var requestURLs: [URL] = []
-        var completions = [(Error) -> Void]()
+        
+        var message = [(url: URL, completion: (Error) -> Void)]()
+        var requestURLs: [URL] { message.map { $0.url } }
         
         func send(url: URL, completion: @escaping (Error) -> Void) {
-            completions.append(completion)
-            requestURLs.append(url)
+            message.append((url, completion))
         }
         
         // a mock behavior
         func complete(with error: Error, index: Int = 0) {
-            completions[index](error)
+            message[index].completion(error)
         }
     }
 }
