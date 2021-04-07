@@ -12,7 +12,7 @@ class FeedTests: XCTestCase {
 
     func test_init_clientDoesNotRequestDataFromURL() {
         let (_, client) = makeSUT()
-        XCTAssertNil(client.requestURL)
+        XCTAssertTrue(client.requestURLs.isEmpty)
     }
     
     func test_load_requestDataFromURL() {
@@ -21,7 +21,18 @@ class FeedTests: XCTestCase {
 
         sut.load()
 
-        XCTAssertEqual(client.requestURL, url)
+        XCTAssertEqual(client.requestURLs, [url])
+    }
+    
+    func test_loadTwice_requestDataFromURLTwice() {
+        let url = URL(string: "https://a-given-url.com")!
+        let (sut, client) = makeSUT(url: url)
+
+        sut.load()
+        sut.load()
+
+        XCTAssertEqual(client.requestURLs.count, 2)
+        XCTAssertEqual(client.requestURLs, [url, url])
     }
     
     // MARK: - Helper
@@ -33,10 +44,10 @@ class FeedTests: XCTestCase {
     }
     
     private class MockHTTPClient: HTTPClient {
-        var requestURL: URL?
+        var requestURLs: [URL] = []
         
         func send(url: URL) {
-            requestURL = url
+            requestURLs.append(url)
         }
     }
 }
