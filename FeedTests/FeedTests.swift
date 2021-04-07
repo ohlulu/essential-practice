@@ -38,15 +38,28 @@ class FeedTests: XCTestCase {
     func test_load_deliverErrorOnClientError() {
         let url = URL(string: "https://a-given-url.com")!
         let (sut, client) = makeSUT(url: url)
-
-        client.error = NSError()
         
         var capturedError: RemoteFeedLoader.Error?
-        sut.load { error in
-            capturedError = error
-        }
+        sut.load { capturedError = $0 }
+        client.complete(with: NSError())
 
         XCTAssertEqual(capturedError, .connectivity)
+    }
+    
+    func test_loadTwice_deliverErrorOnClientErrorTwice() {
+        let url = URL(string: "https://a-given-url.com")!
+        let (sut, client) = makeSUT(url: url)
+        
+        var capturedErrors = [RemoteFeedLoader.Error]()
+        
+        
+        sut.load { capturedErrors.append($0) }
+        client.complete(with: NSError())
+        
+        sut.load { capturedErrors.append($0) }
+        client.complete(with: NSError())
+
+        XCTAssertEqual(capturedErrors, [.connectivity, .connectivity])
     }
     
     // MARK: - Helper
@@ -60,13 +73,15 @@ class FeedTests: XCTestCase {
     private class MockHTTPClient: HTTPClient {
         var requestURLs: [URL] = []
         var error: Error?
+        var completions = [(Error) -> Void]()
         
-        func send(url: URL, completion: (Error) -> Void) {
-            if let error = error {
-                completion(error)
-            }
+        func send(url: URL, completion: @escaping (Error) -> Void) {
+            completions.append(completion)
             requestURLs.append(url)
         }
         
+        func complete(with error: Error, index: Int = 0) {
+            completions[index](error)
+        }
     }
 }
