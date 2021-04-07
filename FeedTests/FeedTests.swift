@@ -19,7 +19,7 @@ class FeedTests: XCTestCase {
         let url = URL(string: "https://a-given-url.com")!
         let (sut, client) = makeSUT(url: url)
 
-        sut.load()
+        sut.load { _ in }
 
         XCTAssertEqual(client.requestURLs, [url])
     }
@@ -28,11 +28,25 @@ class FeedTests: XCTestCase {
         let url = URL(string: "https://a-given-url.com")!
         let (sut, client) = makeSUT(url: url)
 
-        sut.load()
-        sut.load()
+        sut.load { _ in }
+        sut.load { _ in }
 
         XCTAssertEqual(client.requestURLs.count, 2)
         XCTAssertEqual(client.requestURLs, [url, url])
+    }
+    
+    func test_load_deliverErrorOnClientError() {
+        let url = URL(string: "https://a-given-url.com")!
+        let (sut, client) = makeSUT(url: url)
+
+        client.error = NSError()
+        
+        var capturedError: RemoteFeedLoader.Error?
+        sut.load { error in
+            capturedError = error
+        }
+
+        XCTAssertEqual(capturedError, .connectivity)
     }
     
     // MARK: - Helper
@@ -45,9 +59,14 @@ class FeedTests: XCTestCase {
     
     private class MockHTTPClient: HTTPClient {
         var requestURLs: [URL] = []
+        var error: Error?
         
-        func send(url: URL) {
+        func send(url: URL, completion: (Error) -> Void) {
+            if let error = error {
+                completion(error)
+            }
             requestURLs.append(url)
         }
+        
     }
 }

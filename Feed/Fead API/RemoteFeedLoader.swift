@@ -7,10 +7,14 @@
 
 import Foundation
 public protocol HTTPClient {
-    func send(url: URL)
+    func send(url: URL, completion: (Error) -> Void)
 }
 
 public class RemoteFeedLoader {
+    
+    public enum Error: Swift.Error {
+        case connectivity
+    }
     
     private var client: HTTPClient
     private var url: URL
@@ -20,8 +24,10 @@ public class RemoteFeedLoader {
         self.url = url
     }
     
-    public func load() {
-        client.send(url: url)
+    public func load(completion: (Error) -> Void) {
+        client.send(url: url) { error in
+            completion(.connectivity)
+        }
     }
 }
 
