@@ -65,11 +65,13 @@ class FeedTests: XCTestCase {
         let url = URL(string: "https://a-given-url.com")!
         let (sut, client) = makeSUT(url: url)
         
-        var capturedErrors = [RemoteFeedLoader.Error]()
-        sut.load { capturedErrors.append($0) }
-        client.complete(withStatusCode: 400)
-
-        XCTAssertEqual(capturedErrors, [.invalidData])
+        let sample = [199, 200, 201, 300, 400, 500]
+        sample.enumerated().forEach { index, code in
+            var capturedErrors = [RemoteFeedLoader.Error]()
+            sut.load { capturedErrors.append($0) }
+            client.complete(withStatusCode: code, at: index)
+            XCTAssertEqual(capturedErrors, [.invalidData])
+        }
     }
     
     // MARK: - Helper
@@ -91,11 +93,11 @@ class FeedTests: XCTestCase {
         
         // - mock behavior
         
-        func complete(with error: Error, index: Int = 0) {
+        func complete(with error: Error, at index: Int = 0) {
             message[index].completion(.failure(error))
         }
         
-        func complete(withStatusCode code: Int, index: Int = 0) {
+        func complete(withStatusCode code: Int, at index: Int = 0) {
             let response = HTTPURLResponse(
                 url: message[index].url,
                 statusCode: code,
