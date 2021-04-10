@@ -38,27 +38,18 @@ class FeedTests: XCTestCase {
     func test_load_deliverErrorOnClientError() {
         let url = URL(string: "https://a-given-url.com")!
         let (sut, client) = makeSUT(url: url)
-        
-        var capturedResults = [RemoteFeedLoader.Result]()
-        sut.load { capturedResults.append($0) }
-        client.complete(with: NSError())
-
-        XCTAssertEqual(capturedResults, [.failure(.connectivity)])
+        except(sut: sut, to: [.failure(.connectivity)]) {
+            client.complete(with: NSError())
+        }
     }
     
     func test_loadTwice_deliverErrorOnClientErrorTwice() {
         let url = URL(string: "https://a-given-url.com")!
         let (sut, client) = makeSUT(url: url)
-        
-        var capturedResults = [RemoteFeedLoader.Result]()
-        
-        sut.load { capturedResults.append($0) }
-        client.complete(with: NSError())
-        
-        sut.load { capturedResults.append($0) }
-        client.complete(with: NSError())
-
-        XCTAssertEqual(capturedResults, [.failure(.connectivity), .failure(.connectivity)])
+        except(sut: sut, to: [.failure(.connectivity), .failure(.connectivity)]) {
+            client.complete(with: NSError())
+            client.complete(with: NSError())
+        }
     }
     
     func test_load_deliverErrorOnNon200HTTPStatusCode() {
@@ -67,10 +58,9 @@ class FeedTests: XCTestCase {
         
         let sample = [199, 200, 201, 300, 400, 500]
         sample.enumerated().forEach { index, code in
-            var capturedResults = [RemoteFeedLoader.Result]()
-            sut.load { capturedResults.append($0) }
-            client.complete(withStatusCode: code, at: index)
-            XCTAssertEqual(capturedResults, [.failure(.invalidData)])
+            except(sut: sut, to: [.failure(.invalidData)]) {
+                client.complete(withStatusCode: code, at: index)
+            }
         }
     }
     
@@ -80,6 +70,15 @@ class FeedTests: XCTestCase {
         let client = MockHTTPClient()
         let sut = RemoteFeedLoader(client: client, url: url)
         return (sut, client)
+    }
+    
+    private func except(sut: RemoteFeedLoader, to completionWithResults: [RemoteFeedLoader.Result], when action: () -> Void, file: StaticString = #filePath, line: UInt = #line) {
+        var capturedResult = [RemoteFeedLoader.Result]()
+        sut.load { capturedResult.append($0) }
+        
+        action()
+        
+        XCTAssertEqual(capturedResult, completionWithResults, file: file, line: line)
     }
     
     private class MockHTTPClient: HTTPClient {
