@@ -18,7 +18,7 @@ public class RemoteFeedLoader {
         case invalidData
     }
     
-    public typealias Result = Swift.Result<FeedItem, Error>
+    public typealias Result = Swift.Result<[FeedItem], Error>
     
     private var client: HTTPClient
     private var url: URL
@@ -31,11 +31,33 @@ public class RemoteFeedLoader {
     public func load(completion: @escaping (Result) -> Void) {
         client.send(url: url) { result in
             switch result {
-            case .success:
-                completion(.invalidData)
+            case let .success((data, _)):
+                do {
+                    let dto = try JSONDecoder().decode(Root.self, from: data)
+                    
+                    let entity = dto.items.map {
+                        FeedItem(id: $0.id, description: $0.description, location: $0.location, imageURL: $0.image)
+                    }
+                    completion(.success(entity))
+                } catch {
+                    completion(.failure(.invalidData))
+                }
+                
             case .failure:
                 completion(.failure(.connectivity))
             }
         }
     }
+}
+
+private struct Root: Decodable {
+    
+    struct FeedItemDTO: Decodable {
+        let id: UUID
+        let description: String?
+        let location: String?
+        let image: URL
+    }
+    
+    let items: [FeedItemDTO]
 }

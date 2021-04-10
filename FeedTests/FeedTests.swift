@@ -5,8 +5,8 @@
 //  Created by Ohlulu on 2021/4/5.
 //
 
-import XCTest
 import Feed
+import XCTest
 
 class FeedTests: XCTestCase {
 
@@ -55,11 +55,32 @@ class FeedTests: XCTestCase {
     func test_load_deliverErrorOnNon200HTTPStatusCode() {
         let url = URL(string: "https://a-given-url.com")!
         let (sut, client) = makeSUT(url: url)
-        
+
         let sample = [199, 200, 201, 300, 400, 500]
         sample.enumerated().forEach { index, code in
             except(sut: sut, to: [.failure(.invalidData)]) {
-                client.complete(withStatusCode: code, at: index)
+                client.complete(withStatusCode: code, data: Data(), at: index)
+            }
+        }
+    }
+    
+    func test_load_deliverFeedItemOn20HTTPStatusCode() {
+        let url = URL(string: "https://a-given-url.com")!
+        let (sut, client) = makeSUT(url: url)
+        
+        let item1 = makeItem(id: UUID(), description: "desc", location: "location", imageURL: URL(string: "https://image-url.com")!)
+        
+        let item2 = makeItem(id: UUID(), description: nil, location: "location", imageURL: URL(string: "https://image-url.com")!)
+        
+        let item3 = makeItem(id: UUID(), description: "desc", location: nil, imageURL: URL(string: "https://image-url.com")!)
+        
+        let item4 = makeItem(id: UUID(), description: nil, location: nil, imageURL: URL(string: "https://image-url.com")!)
+        
+        let items = [item1, item2, item3, item4]
+        items.enumerated().forEach { index, item in
+            print(item.feed)
+            except(sut: sut, to: [.success([item.feed])]) {
+                client.complete(withStatusCode: 200, data: item.jsonData, at: index)
             }
         }
     }
@@ -70,6 +91,23 @@ class FeedTests: XCTestCase {
         let client = MockHTTPClient()
         let sut = RemoteFeedLoader(client: client, url: url)
         return (sut, client)
+    }
+    
+    private func makeItem(id: UUID, description: String?, location: String?, imageURL: URL) -> (feed: FeedItem, jsonData: Data) {
+        
+        let item = FeedItem(id: id, description: description, location: location, imageURL: imageURL)
+        let json = [
+            "items": [
+                [
+                    "id": id.uuidString,
+                    "description": description,
+                    "location": location,
+                    "image": imageURL.absoluteString
+                ]
+            ]
+        ]
+        let jsonData = try! JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
+        return (item, jsonData)
     }
     
     private func except(sut: RemoteFeedLoader, to completionWithResults: [RemoteFeedLoader.Result], when action: () -> Void, file: StaticString = #filePath, line: UInt = #line) {
@@ -84,7 +122,7 @@ class FeedTests: XCTestCase {
     private class MockHTTPClient: HTTPClient {
         
         var message = [(url: URL, completion: (Result<(Data, HTTPURLResponse), Error>) -> Void)]()
-        var requestURLs: [URL] { message.map { $0.url } }
+        var requestURLs: [URL] { message.map(\.url) }
         
         func send(url: URL, completion: @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) {
             message.append((url, completion))
@@ -96,7 +134,7 @@ class FeedTests: XCTestCase {
             message[index].completion(.failure(error))
         }
         
-        func complete(withStatusCode code: Int, data: Data = Data(), at index: Int = 0) {
+        func complete(withStatusCode code: Int, data: Data, at index: Int = 0) {
             let response = HTTPURLResponse(
                 url: message[index].url,
                 statusCode: code,
