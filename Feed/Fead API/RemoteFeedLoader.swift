@@ -8,7 +8,7 @@
 import Foundation
 
 public protocol HTTPClient {
-    func send(url: URL, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void)
+    func send(url: URL, completion: @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void)
 }
 
 public class RemoteFeedLoader {
@@ -18,6 +18,8 @@ public class RemoteFeedLoader {
         case invalidData
     }
     
+    public typealias Result = Swift.Result<FeedItem, Error>
+    
     private var client: HTTPClient
     private var url: URL
     
@@ -26,15 +28,14 @@ public class RemoteFeedLoader {
         self.url = url
     }
     
-    public func load(completion: @escaping (Error) -> Void) {
+    public func load(completion: @escaping (Result) -> Void) {
         client.send(url: url) { result in
             switch result {
             case .success:
                 completion(.invalidData)
             case .failure:
-                completion(.connectivity)
+                completion(.failure(.connectivity))
             }
         }
     }
 }
-

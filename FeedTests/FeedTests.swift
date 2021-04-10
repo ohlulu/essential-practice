@@ -39,26 +39,26 @@ class FeedTests: XCTestCase {
         let url = URL(string: "https://a-given-url.com")!
         let (sut, client) = makeSUT(url: url)
         
-        var capturedErrors = [RemoteFeedLoader.Error]()
-        sut.load { capturedErrors.append($0) }
+        var capturedResults = [RemoteFeedLoader.Result]()
+        sut.load { capturedResults.append($0) }
         client.complete(with: NSError())
 
-        XCTAssertEqual(capturedErrors, [.connectivity])
+        XCTAssertEqual(capturedResults, [.failure(.connectivity)])
     }
     
     func test_loadTwice_deliverErrorOnClientErrorTwice() {
         let url = URL(string: "https://a-given-url.com")!
         let (sut, client) = makeSUT(url: url)
         
-        var capturedErrors = [RemoteFeedLoader.Error]()
+        var capturedResults = [RemoteFeedLoader.Result]()
         
-        sut.load { capturedErrors.append($0) }
+        sut.load { capturedResults.append($0) }
         client.complete(with: NSError())
         
-        sut.load { capturedErrors.append($0) }
+        sut.load { capturedResults.append($0) }
         client.complete(with: NSError())
 
-        XCTAssertEqual(capturedErrors, [.connectivity, .connectivity])
+        XCTAssertEqual(capturedResults, [.failure(.connectivity), .failure(.connectivity)])
     }
     
     func test_load_deliverErrorOnNon200HTTPStatusCode() {
@@ -67,10 +67,10 @@ class FeedTests: XCTestCase {
         
         let sample = [199, 200, 201, 300, 400, 500]
         sample.enumerated().forEach { index, code in
-            var capturedErrors = [RemoteFeedLoader.Error]()
-            sut.load { capturedErrors.append($0) }
+            var capturedResults = [RemoteFeedLoader.Result]()
+            sut.load { capturedResults.append($0) }
             client.complete(withStatusCode: code, at: index)
-            XCTAssertEqual(capturedErrors, [.invalidData])
+            XCTAssertEqual(capturedResults, [.failure(.invalidData)])
         }
     }
     
@@ -84,10 +84,10 @@ class FeedTests: XCTestCase {
     
     private class MockHTTPClient: HTTPClient {
         
-        var message = [(url: URL, completion: (Result<HTTPURLResponse, Error>) -> Void)]()
+        var message = [(url: URL, completion: (Result<(Data, HTTPURLResponse), Error>) -> Void)]()
         var requestURLs: [URL] { message.map { $0.url } }
         
-        func send(url: URL, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
+        func send(url: URL, completion: @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) {
             message.append((url, completion))
         }
         
@@ -97,14 +97,14 @@ class FeedTests: XCTestCase {
             message[index].completion(.failure(error))
         }
         
-        func complete(withStatusCode code: Int, at index: Int = 0) {
+        func complete(withStatusCode code: Int, data: Data = Data(), at index: Int = 0) {
             let response = HTTPURLResponse(
                 url: message[index].url,
                 statusCode: code,
                 httpVersion: nil,
                 headerFields: nil
             )!
-            message[index].completion(.success(response))
+            message[index].completion(.success((data, response)))
         }
     }
 }
