@@ -25,7 +25,8 @@ public class RemoteFeedLoader {
     }
     
     public func load(completion: @escaping (Result) -> Void) {
-        client.send(url: url) { result in
+        client.send(url: url) { [weak self] result in
+            guard self != nil else { return }
             switch result {
             case let .success(tuple):
                 let (data, response) = tuple
