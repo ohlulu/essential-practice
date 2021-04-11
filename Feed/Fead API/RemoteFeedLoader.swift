@@ -14,7 +14,7 @@ public class RemoteFeedLoader {
         case invalidData
     }
     
-    public typealias Result = Swift.Result<[FeedItem], Error>
+    public typealias Result = Swift.Result<[FeedItemEntity], Error>
     
     private var client: HTTPClient
     private var url: URL
@@ -32,7 +32,7 @@ public class RemoteFeedLoader {
                     let dto = try JSONDecoder().decode(Root.self, from: data)
                     
                     let entity = dto.items.map {
-                        FeedItem(id: $0.id, description: $0.description, location: $0.location, imageURL: $0.image)
+                        FeedItemEntity(id: $0.id, description: $0.description, location: $0.location, imageURL: $0.image)
                     }
                     completion(.success(entity))
                 } catch {

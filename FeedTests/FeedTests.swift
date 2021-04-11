@@ -93,9 +93,9 @@ class FeedTests: XCTestCase {
         return (sut, client)
     }
     
-    private func makeItem(id: UUID, description: String?, location: String?, imageURL: URL) -> (feed: FeedItem, jsonData: Data) {
+    private func makeItem(id: UUID, description: String?, location: String?, imageURL: URL) -> (feed: FeedItemEntity, jsonData: Data) {
         
-        let item = FeedItem(id: id, description: description, location: location, imageURL: imageURL)
+        let item = FeedItemEntity(id: id, description: description, location: location, imageURL: imageURL)
         let json = [
             "items": [
                 [
