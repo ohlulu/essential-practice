@@ -116,6 +116,10 @@ class FeedTests: XCTestCase {
         
         action()
         
+        addTeardownBlock { [weak sut] in
+            XCTAssertNil(sut, "RemoteFeedLoader should be nil when instance deallocation", file: file, line: line)
+        }
+        
         XCTAssertEqual(capturedResult, completionWithResults, file: file, line: line)
     }
     
