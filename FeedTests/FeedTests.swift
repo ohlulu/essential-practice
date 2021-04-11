@@ -87,8 +87,8 @@ class FeedTests: XCTestCase {
     
     // MARK: - Helper
     
-    private func makeSUT(url: URL = URL(string: "https://a-url.com")!) -> (sut: RemoteFeedLoader, client: MockHTTPClient) {
-        let client = MockHTTPClient()
+    private func makeSUT(url: URL = URL(string: "https://a-url.com")!) -> (sut: RemoteFeedLoader, client: HTTPClientSpy) {
+        let client = HTTPClientSpy()
         let sut = RemoteFeedLoader(client: client, url: url)
         return (sut, client)
     }
@@ -119,7 +119,7 @@ class FeedTests: XCTestCase {
         XCTAssertEqual(capturedResult, completionWithResults, file: file, line: line)
     }
     
-    private class MockHTTPClient: HTTPClient {
+    private class HTTPClientSpy: HTTPClient {
         
         var message = [(url: URL, completion: (Result<(Data, HTTPURLResponse), Error>) -> Void)]()
         var requestURLs: [URL] { message.map(\.url) }
@@ -128,7 +128,7 @@ class FeedTests: XCTestCase {
             message.append((url, completion))
         }
         
-        // - mock behavior
+        // - spying behavior
         
         func complete(with error: Error, at index: Int = 0) {
             message[index].completion(.failure(error))
