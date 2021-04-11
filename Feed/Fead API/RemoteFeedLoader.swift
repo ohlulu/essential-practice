@@ -7,10 +7,6 @@
 
 import Foundation
 
-public protocol HTTPClient {
-    func send(url: URL, completion: @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void)
-}
-
 public class RemoteFeedLoader {
     
     public enum Error: Swift.Error {
