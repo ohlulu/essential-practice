@@ -38,7 +38,7 @@ class FeedTests: XCTestCase {
     func test_load_deliverErrorOnClientError() {
         let url = URL(string: "https://a-given-url.com")!
         let (sut, client) = makeSUT(url: url)
-        except(sut: sut, to: [.failure(.connectivity)]) {
+        except(sut: sut, to: failure(.connectivity)) {
             client.complete(with: NSError())
         }
     }
@@ -46,8 +46,7 @@ class FeedTests: XCTestCase {
     func test_loadTwice_deliverErrorOnClientErrorTwice() {
         let url = URL(string: "https://a-given-url.com")!
         let (sut, client) = makeSUT(url: url)
-        except(sut: sut, to: [.failure(.connectivity), .failure(.connectivity)]) {
-            client.complete(with: NSError())
+        except(sut: sut, to: failure(.connectivity)) {
             client.complete(with: NSError())
         }
     }
@@ -58,7 +57,7 @@ class FeedTests: XCTestCase {
 
         let sample = [199, 200, 201, 300, 400, 500]
         sample.enumerated().forEach { index, code in
-            except(sut: sut, to: [.failure(.invalidData)]) {
+            except(sut: sut, to: failure(.invalidData)) {
                 client.complete(withStatusCode: code, data: Data(), at: index)
             }
         }
@@ -79,7 +78,7 @@ class FeedTests: XCTestCase {
         let items = [item1, item2, item3, item4]
         items.enumerated().forEach { index, item in
             print(item.feed)
-            except(sut: sut, to: [.success([item.feed])]) {
+            except(sut: sut, to: .success([item.feed])) {
                 client.complete(withStatusCode: 200, data: item.jsonData, at: index)
             }
         }
@@ -107,6 +106,10 @@ class FeedTests: XCTestCase {
         return (sut, client)
     }
     
+    private func failure(_ error: RemoteFeedLoader.Error) -> RemoteFeedLoader.Result {
+        return .failure(error)
+    }
+    
     private func makeItem(id: UUID, description: String?, location: String?, imageURL: URL) -> (feed: FeedItemEntity, jsonData: Data) {
         
         let item = FeedItemEntity(id: id, description: description, location: location, imageURL: imageURL)
@@ -124,17 +127,25 @@ class FeedTests: XCTestCase {
         return (item, jsonData)
     }
     
-    private func except(sut: RemoteFeedLoader, to completionWithResults: [RemoteFeedLoader.Result], when action: () -> Void, file: StaticString = #filePath, line: UInt = #line) {
-        var capturedResult = [RemoteFeedLoader.Result]()
-        sut.load { capturedResult.append($0) }
+    private func except(sut: RemoteFeedLoader, to exceptedResults: RemoteFeedLoader.Result, when action: () -> Void, file: StaticString = #filePath, line: UInt = #line) {
+        
+        sut.load { receivedResult in
+            switch (receivedResult, exceptedResults) {
+            case let (.success(receivedItems), .success(exceptedItems)):
+                XCTAssertEqual(receivedItems, exceptedItems, file: file, line: line)
+            case let (.failure(receivedError as RemoteFeedLoader.Error), .failure(exceptedError as RemoteFeedLoader.Error)):
+                XCTAssertEqual(receivedError, exceptedError, file: file, line: line)
+            default:
+                XCTFail("\(receivedResult) should be equeal to \(exceptedResults)", file: file, line: line)
+            }
+            
+        }
         
         action()
         
         addTeardownBlock { [weak sut] in
             XCTAssertNil(sut, "RemoteFeedLoader should be nil when instance deallocation", file: file, line: line)
         }
-        
-        XCTAssertEqual(capturedResult, completionWithResults, file: file, line: line)
     }
     
     private class HTTPClientSpy: HTTPClient {

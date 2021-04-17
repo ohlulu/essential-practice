@@ -7,11 +7,9 @@
 
 import Foundation
 
-enum LoadFeedResult {
-    case success([FeedItemEntity])
-    case error(Error)
-}
-
-protocol FeedLoader {
-    func load(completion: @escaping (LoadFeedResult) -> Void)
+public protocol FeedLoader {
+    
+    typealias Result = Swift.Result<[FeedItemEntity], Error>
+    
+    func load(completion: @escaping (Result) -> Void)
 }

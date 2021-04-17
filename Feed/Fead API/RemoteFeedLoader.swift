@@ -14,7 +14,7 @@ public class RemoteFeedLoader {
         case invalidData
     }
     
-    public typealias Result = Swift.Result<[FeedItemEntity], Error>
+    public typealias Result = FeedLoader.Result
     
     private var client: HTTPClient
     private var url: URL
@@ -24,7 +24,7 @@ public class RemoteFeedLoader {
         self.url = url
     }
     
-    public func load(completion: @escaping (Result) -> Void) {
+    public func load(completion: @escaping (FeedLoader.Result) -> Void) {
         client.send(url: url) { [weak self] result in
             guard self != nil else { return }
             switch result {
@@ -32,7 +32,7 @@ public class RemoteFeedLoader {
                 let (data, response) = tuple
                 completion(FeedItemMapper.map(data, from: response))
             case .failure:
-                completion(.failure(.connectivity))
+                completion(.failure(RemoteFeedLoader.Error.connectivity))
             }
         }
     }
