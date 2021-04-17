@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class RemoteFeedLoader {
+public class RemoteFeedLoader: FeedLoader {
     
     public enum Error: Swift.Error {
         case connectivity
