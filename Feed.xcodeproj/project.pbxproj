@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		503E3BBA261DF4580079ABD3 /* RemoteFeedLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 503E3BB9261DF4580079ABD3 /* RemoteFeedLoader.swift */; };
+		5050A46C262DC58F0095EF58 /* URLSessionHTTPClient_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5050A46B262DC58F0095EF58 /* URLSessionHTTPClient_Tests.swift */; };
 		508E06A82622AEDC003B9128 /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 508E06A72622AEDC003B9128 /* HTTPClient.swift */; };
 		508E06AF2622B0CE003B9128 /* FeedItemMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 508E06AE2622B0CE003B9128 /* FeedItemMapper.swift */; };
 		509D861E261AF53B001D75A1 /* Feed.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 509D8614261AF53A001D75A1 /* Feed.framework */; };
@@ -29,6 +30,7 @@
 
 /* Begin PBXFileReference section */
 		503E3BB9261DF4580079ABD3 /* RemoteFeedLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteFeedLoader.swift; sourceTree = "<group>"; };
+		5050A46B262DC58F0095EF58 /* URLSessionHTTPClient_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionHTTPClient_Tests.swift; sourceTree = "<group>"; };
 		508E06A72622AEDC003B9128 /* HTTPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
 		508E06AE2622B0CE003B9128 /* FeedItemMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedItemMapper.swift; sourceTree = "<group>"; };
 		509D8614261AF53A001D75A1 /* Feed.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Feed.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -103,6 +105,7 @@
 			isa = PBXGroup;
 			children = (
 				509D8622261AF53B001D75A1 /* RemoteFeedTests.swift */,
+				5050A46B262DC58F0095EF58 /* URLSessionHTTPClient_Tests.swift */,
 				509D8624261AF53B001D75A1 /* Info.plist */,
 			);
 			path = FeedTests;
@@ -238,6 +241,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5050A46C262DC58F0095EF58 /* URLSessionHTTPClient_Tests.swift in Sources */,
 				509D8623261AF53B001D75A1 /* RemoteFeedTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
