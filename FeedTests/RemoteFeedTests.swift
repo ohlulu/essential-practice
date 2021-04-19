@@ -129,6 +129,8 @@ class FeedTests: XCTestCase {
     
     private func except(sut: RemoteFeedLoader, to exceptedResults: RemoteFeedLoader.Result, when action: () -> Void, file: StaticString = #filePath, line: UInt = #line) {
         
+        let exp = expectation(description: "wait for load completion")
+        
         sut.load { receivedResult in
             switch (receivedResult, exceptedResults) {
             case let (.success(receivedItems), .success(exceptedItems)):
@@ -138,14 +140,17 @@ class FeedTests: XCTestCase {
             default:
                 XCTFail("\(receivedResult) should be equeal to \(exceptedResults)", file: file, line: line)
             }
-            
+            exp.fulfill()
         }
         
         action()
         
+        wait(for: [exp], timeout: 1.0)
+        
         addTeardownBlock { [weak sut] in
             XCTAssertNil(sut, "RemoteFeedLoader should be nil when instance deallocation", file: file, line: line)
         }
+        
     }
     
     private class HTTPClientSpy: HTTPClient {
