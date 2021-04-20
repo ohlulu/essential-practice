@@ -58,23 +58,10 @@ class URLSessionHTTPClient_Tests: XCTestCase {
     }
 
     func test_sendURL_failsOnRequestError() {
-        let error = NSError(domain: "error", code: 1)
-        
-        URLProtocolStub.stub(data: nil, response: nil, error: error)
-        
-        let sut = makeSUT()
-        let exp = expectation(description: "wait for completion.")
-        sut.send(url: anyURL()) { result in
-            switch result {
-            case let .failure(receivedError as NSError):
-                XCTAssertEqual(receivedError.domain, error.domain)
-                XCTAssertEqual(receivedError.code, error.code)
-            default:
-                XCTFail("expected failure with error \(error)")
-            }
-            exp.fulfill()
-        }
-        wait(for: [exp], timeout: 1.0)
+        let requestError = anyNSError()
+        let receiveError = resultErrorFor(data: nil, response: nil, error: requestError) as NSError?
+        XCTAssertEqual(receiveError?.domain, requestError.domain)
+        XCTAssertEqual(receiveError?.code, requestError.code)
     }
     
     func test_sendURL_allInvalidateCase() {
