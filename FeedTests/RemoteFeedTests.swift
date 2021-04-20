@@ -16,7 +16,7 @@ class FeedTests: XCTestCase {
     }
     
     func test_load_requestDataFromURL() {
-        let url = URL(string: "https://a-given-url.com")!
+        let url = anyURL()
         let (sut, client) = makeSUT(url: url)
 
         sut.load { _ in }
@@ -25,7 +25,7 @@ class FeedTests: XCTestCase {
     }
     
     func test_loadTwice_requestDataFromURLTwice() {
-        let url = URL(string: "https://a-given-url.com")!
+        let url = anyURL()
         let (sut, client) = makeSUT(url: url)
 
         sut.load { _ in }
@@ -36,24 +36,21 @@ class FeedTests: XCTestCase {
     }
     
     func test_load_deliverErrorOnClientError() {
-        let url = URL(string: "https://a-given-url.com")!
-        let (sut, client) = makeSUT(url: url)
+        let (sut, client) = makeSUT(url: anyURL())
         expect(sut: sut, to: failure(.connectivity)) {
             client.complete(with: NSError())
         }
     }
     
     func test_loadTwice_deliverErrorOnClientErrorTwice() {
-        let url = URL(string: "https://a-given-url.com")!
-        let (sut, client) = makeSUT(url: url)
+        let (sut, client) = makeSUT(url: anyURL())
         expect(sut: sut, to: failure(.connectivity)) {
             client.complete(with: NSError())
         }
     }
     
     func test_load_deliverErrorOnNon200HTTPStatusCode() {
-        let url = URL(string: "https://a-given-url.com")!
-        let (sut, client) = makeSUT(url: url)
+        let (sut, client) = makeSUT(url: anyURL())
 
         let sample = [199, 200, 201, 300, 400, 500]
         sample.enumerated().forEach { index, code in
@@ -64,8 +61,7 @@ class FeedTests: XCTestCase {
     }
     
     func test_load_deliverFeedItemOn20HTTPStatusCode() {
-        let url = URL(string: "https://a-given-url.com")!
-        let (sut, client) = makeSUT(url: url)
+        let (sut, client) = makeSUT(url: anyURL())
         
         let item1 = makeItem(id: UUID(), description: "desc", location: "location", imageURL: URL(string: "https://image-url.com")!)
         
@@ -85,9 +81,8 @@ class FeedTests: XCTestCase {
     }
     
     func test_load_doesNotDeliverResultResultAfterSUTBeenDeallocated() {
-        let url = URL(string: "http://any-url.com")!
         let client = HTTPClientSpy()
-        var sut: RemoteFeedLoader? = RemoteFeedLoader(client: client, url: url)
+        var sut: RemoteFeedLoader? = RemoteFeedLoader(client: client, url: anyURL())
         
         var capturedResults = [RemoteFeedLoader.Result]()
         sut?.load { capturedResults.append($0) }
