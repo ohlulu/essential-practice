@@ -98,6 +98,7 @@ class FeedTests: XCTestCase {
     private func makeSUT(url: URL = URL(string: "https://a-url.com")!) -> (sut: RemoteFeedLoader, client: HTTPClientSpy) {
         let client = HTTPClientSpy()
         let sut = RemoteFeedLoader(client: client, url: url)
+        trackMemoryLeak(sut)
         return (sut, client)
     }
     
@@ -141,11 +142,6 @@ class FeedTests: XCTestCase {
         action()
         
         wait(for: [exp], timeout: 1.0)
-        
-        addTeardownBlock { [weak sut] in
-            XCTAssertNil(sut, "RemoteFeedLoader should be nil when instance deallocation", file: file, line: line)
-        }
-        
     }
     
     private class HTTPClientSpy: HTTPClient {

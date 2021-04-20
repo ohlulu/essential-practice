@@ -12,4 +12,10 @@ extension XCTestCase {
     func anyURL() -> URL {
         return URL(string: "http://any-url.com")!
     }
+    
+    func trackMemoryLeak(_ instance: AnyObject, file: StaticString = #filePath, line: UInt = #line) {
+        addTeardownBlock { [weak instance] in
+            XCTAssertNil(instance, file: file, line: line)
+        }
+    }
 }
