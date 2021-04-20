@@ -8,5 +8,6 @@
 import Foundation
 
 public protocol HTTPClient {
-    func send(url: URL, completion: @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void)
+    typealias Result = Swift.Result<(Data, HTTPURLResponse), Error>
+    func send(url: URL, completion: @escaping (Result) -> Void)
 }

@@ -146,7 +146,7 @@ class FeedTests: XCTestCase {
     
     private class HTTPClientSpy: HTTPClient {
         
-        var message = [(url: URL, completion: (Result<(Data, HTTPURLResponse), Error>) -> Void)]()
+        var message = [(url: URL, completion: (Result) -> Void)]()
         var requestURLs: [URL] { message.map(\.url) }
         
         func send(url: URL, completion: @escaping (Result<(Data, HTTPURLResponse), Error>) -> Void) {
