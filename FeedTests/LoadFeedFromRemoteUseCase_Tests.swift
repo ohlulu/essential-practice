@@ -1,6 +1,6 @@
 //
-//  FeedTests.swift
-//  FeedTests
+//  LoadFeedFromRemoteUseCase_Tests.swift
+//  LoadFeedFromRemoteUseCase_Tests
 //
 //  Created by Ohlulu on 2021/4/5.
 //
@@ -8,7 +8,7 @@
 import Feed
 import XCTest
 
-class FeedTests: XCTestCase {
+class LoadFeedFromRemoteUseCase_Tests: XCTestCase {
 
     func test_init_clientDoesNotRequestDataFromURL() {
         let (_, client) = makeSUT()
