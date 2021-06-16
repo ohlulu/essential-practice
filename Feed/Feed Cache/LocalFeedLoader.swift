@@ -12,7 +12,21 @@ public protocol FeedStore {
     typealias InsertionCompletion = (Error?) -> Void
 
     func deleteCachedFeed(completion: @escaping DeletionCompletion)
-    func insert(_ items: [FeedItemEntity], timestamp: Date, completion: @escaping InsertionCompletion)
+    func insert(_ items: [LocalFeedItem], timestamp: Date, completion: @escaping InsertionCompletion)
+}
+
+public struct LocalFeedItem: Decodable, Equatable {
+    public let id: UUID
+    public let description: String?
+    public let location: String?
+    public let imageURL: URL
+    
+    public init(id: UUID, description: String?, location: String?, imageURL: URL) {
+        self.id = id
+        self.description = description
+        self.location = location
+        self.imageURL = imageURL
+    }
 }
 
 public final class LocalFeedLoader {
@@ -40,9 +54,16 @@ public final class LocalFeedLoader {
     }
     
     private func cache(_ items: [FeedItemEntity], with completion: @escaping (SaveResult) -> Void) {
-        store.insert(items, timestamp: currentDate()) { [weak self] error in
+        store.insert(items.toLocal(), timestamp: currentDate()) { [weak self] error in
             guard self != nil else { return }
             completion(error)
         }
+    }
+}
+
+private extension Array where Element == FeedItemEntity {
+    
+    func toLocal() -> [LocalFeedItem] {
+        return map { LocalFeedItem(id:$0.id, description: $0.description, location: $0.location, imageURL: $0.imageURL) }
     }
 }
